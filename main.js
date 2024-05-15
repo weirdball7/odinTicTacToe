@@ -48,7 +48,7 @@ const createPlayer = (name, mark) => {
 };
 
 const Game = (() => {
-    let winingConditions = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8]];
+    let winnerDisplay = document.querySelector('#message');
     let ocupiedSpaces = [];
     let players = [];
     let currentPlayerIndex;
@@ -71,74 +71,84 @@ const Game = (() => {
         Gameboard.render();
     };
 
+    const handleClick = (event) => {
+        let index = parseInt(event.target.id.split("-")[1]);
 
-// Define occupiedSpacesX outside of handleClick
-let occupiedSpacesX = [];
-let occupiedSpacesO = [];
-const handleClick = (event) => {
-    let index = parseInt(event.target.id.split("-")[1]);
+        // Access occupiedSpaces and Gameboard through Game module
+        let occupiedSpaces = getOccupiedSpaces();
+        let gameboard = Gameboard.getGameboard();
+        if (gameboard[index] !== "") {
+            return;
+        }
+        // Update the game board
+        Gameboard.update(index, players[currentPlayerIndex].mark);
 
-    // Access occupiedSpaces and Gameboard through Game module
-    let occupiedSpaces = getOccupiedSpaces();
-    let gameboard = Gameboard.getGameboard();
-
-    // Instead of forEach, consider using a regular for loop for better control
-    if(ocupiedSpaces.length >= 3) {
-        for (let i = 0; i < occupiedSpaces.length; i++) {
-            if (gameboard[occupiedSpaces[i]] === "X") {
-                occupiedSpacesX.push(occupiedSpaces[i]);
-            } else if (gameboard[occupiedSpaces[i]] === "O") {
-                occupiedSpacesO.push(occupiedSpaces[i]);
-            };
+        if(checkForWin(Gameboard.getGameboard(), players[currentPlayerIndex].mark)) {
+            gameOver = true;
+            winnerDisplay.innerText = `${players[currentPlayerIndex].name} Won!`;
+            restart();
+            setTimeout(removeMessage, 1500);
+            // winnerDisplay.innerText = "";
+        }else if(checkForTie(Gameboard.getGameboard())) {
+            gameOver = true;
+            winnerDisplay.innerText = 'Its a Tie!';
+            restart();          
+            setTimeout(removeMessage, 1500);
         };
+        // winnerDisplay.innerText = "";
+        currentPlayerIndex = currentPlayerIndex === 0 ? 1 : 0;
+    };
+
+    const removeMessage = () => {
+        winnerDisplay.innerText = "";
+    }
+
+    const restart = () => {
+        for (let i = 0; i < 9; i++){
+            Gameboard.update(i, "");
+        };
+        Gameboard.render();
     };
 
 
-    if (gameboard[index] !== "") {
-        return;
-    }
+    const checkForWin = (board) => {
+        let winingConditions = [
+            [0, 1, 2], 
+            [3, 4, 5], 
+            [6, 7, 8], 
+            [0, 3, 6], 
+            [1, 4, 7], 
+            [2, 5, 8]
+        ];
+        for(let i = 0; i < winingConditions.length; i++){
+            const [a, b ,c] = winingConditions[i];
+            if(board[a] && board[a] === board[b] && board[a] === board[c]) {
+                return true;
+            };
+            
+        };
+        return false;
+    };
 
-    // Update occupiedSpacesX before pushing the new index to occupiedSpaces
-    if (gameboard[index] === "X") {
-        occupiedSpacesX.push(index);
-    } else if (gameboard[index] === "O") {
-        occupiedSpacesO.push(index);
-    }
-
-    // Push the new index to occupiedSpaces
-    occupiedSpaces.push(index);
-
-    // Update the game board
-    Gameboard.update(index, players[currentPlayerIndex].mark);
-    currentPlayerIndex = currentPlayerIndex === 0 ? 1 : 0;
-
-    // Log occupiedSpaces and occupiedSpacesX after updating the game board
-    console.log(`occupied Spaces: ${occupiedSpaces}`);
-    console.log(`occupied spaces by X: ${occupiedSpacesX}`);
-    console.log(`occupied spaces by O: ${occupiedSpacesO}`);
-};
-
-
-
-
-    const checkForWin = () => {
-        
-        // for(i = 0; i< winingConditions.length; i++){
-        //     for(j = 0; j<winingConditions[i].length; i++){
-        //         const firstItem = winingConditions[i][0];
-
-        //     };
-        // };
+    
+    const checkForTie = (board) => {
+        return board.every(cell => cell !== "");
     };
 
 
     return {
         start,
         handleClick,
+        restart,
+        checkForWin,
+        checkForTie,
     };
 })();
 
-
+const restartButton = document.querySelector('#restart');
+restartButton.addEventListener('click', () => {
+    Game.restart();
+});
 
 const startButton = document.querySelector("#start");
 startButton.addEventListener('click', () => {
