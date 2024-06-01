@@ -1,9 +1,17 @@
 // This is the Gameboard module
 //it is in charge of rendering and updating the board.
 const Gameboard = (() => {
-    let gameboard = ["", "", "", "", "", "", "", "", "", ]; 
-    // ocupiedSpaces = [];
-
+    let gameboard = [
+        "",
+        "", 
+        "", 
+        "", 
+        "", 
+        "", 
+        "", 
+        "", 
+        "", 
+    ]; 
 
     const render = () => {
         console.log(gameboard);
@@ -72,7 +80,10 @@ const Game = (() => {
     };
 
     const handleClick = (event) => {
-        let index = parseInt(event.target.id.split("-")[1]);
+        let index = parseInt(event.target.id.split("-")[1]); 
+        let playerXScore = 0;
+        let playerOScore = 0;
+        let roundCounter = 0;
 
         // Access occupiedSpaces and Gameboard through Game module
         let occupiedSpaces = getOccupiedSpaces();
@@ -86,17 +97,21 @@ const Game = (() => {
         if(checkForWin(Gameboard.getGameboard(), players[currentPlayerIndex].mark)) {
             gameOver = true;
             winnerDisplay.innerText = `${players[currentPlayerIndex].name} Won!`;
+            roundCounter = roundCounter + 1;
+            console.log(`Round number : ${roundCounter}`);
             restart();
             setTimeout(removeMessage, 1500);
-            // winnerDisplay.innerText = "";
         }else if(checkForTie(Gameboard.getGameboard())) {
             gameOver = true;
             winnerDisplay.innerText = 'Its a Tie!';
+            roundCounter = roundCounter + 1;
+            console.log(`Round number : ${roundCounter}`);
             restart();          
             setTimeout(removeMessage, 1500);
+            
         };
-        // winnerDisplay.innerText = "";
         currentPlayerIndex = currentPlayerIndex === 0 ? 1 : 0;
+        return roundCounter;
     };
 
     const removeMessage = () => {
@@ -135,6 +150,17 @@ const Game = (() => {
         return board.every(cell => cell !== "");
     };
 
+    const playRound = () => {
+        let results = document.querySelector('#result-display');
+        start();
+        if (checkForWin && players[currentPlayerIndex] === 0) {
+            playerXScore += 1;
+            results.innerText = `${players[currentPlayerIndex.name]} ${playerXScore}`;
+            render();
+        };
+        
+
+    };
 
     return {
         start,
@@ -142,6 +168,7 @@ const Game = (() => {
         restart,
         checkForWin,
         checkForTie,
+        playRound,
     };
 })();
 
@@ -152,6 +179,6 @@ restartButton.addEventListener('click', () => {
 
 const startButton = document.querySelector("#start");
 startButton.addEventListener('click', () => {
-    Game.start();  
+    Game.playRound();  
 });
 
